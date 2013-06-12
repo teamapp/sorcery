@@ -28,10 +28,15 @@ module Sorcery
             current_user.remember_me!
             set_remember_me_cookie!(current_user)
           end
-
+          
           # Clears the cookie and clears the token from the db.
-          def forget_me!
+          def forget_me_everywhere!
             @current_user.forget_me!
+            forget_me!
+          end
+
+          # Clears the cookie.
+          def forget_me!
             cookies.delete(:remember_me_token, :domain => Config.cookie_domain)
           end
 

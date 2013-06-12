@@ -49,8 +49,16 @@ module Sorcery
           # You shouldn't really use this one yourself - it's called by the controller's 'remember_me!' method.
           def remember_me!
             config = sorcery_config
-            self.update_many_attributes(config.remember_me_token_attribute_name => TemporaryToken.generate_random_token,
-                                        config.remember_me_token_expires_at_attribute_name => Time.now.in_time_zone + config.remember_me_for)
+            
+            # Use an existing token unless it is expired
+            # This allowes multiple devices or browsers to share a token and remain logged in between sessions
+            token = self.send(config.remember_me_token_attribute_name)
+            expires = self.send(config.remember_me_token_expires_at_attribute_name)
+
+            if token.blank? or expires.blank? or expires < Time.now.in_time_zone
+              self.update_many_attributes(config.remember_me_token_attribute_name => TemporaryToken.generate_random_token,
+                                          config.remember_me_token_expires_at_attribute_name => Time.now.in_time_zone + config.remember_me_for)
+            end
           end
           
           # You shouldn't really use this one yourself - it's called by the controller's 'forget_me!' method.
