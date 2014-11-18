@@ -48,7 +48,7 @@ module Sorcery
             expires = self.send(config.remember_me_token_expires_at_attribute_name)
 
             if token.blank? or expires.blank? or expires < Time.now.in_time_zone
-            self.sorcery_adapter.update_attributes(config.remember_me_token_attribute_name => TemporaryToken.generate_random_token,
+              self.sorcery_adapter.update_attributes(config.remember_me_token_attribute_name => TemporaryToken.generate_random_token,
                                           config.remember_me_token_expires_at_attribute_name => Time.now.in_time_zone + config.remember_me_for)
             end
           end
