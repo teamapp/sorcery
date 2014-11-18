@@ -1,3 +1,40 @@
 language: ruby
 rvm:
-  - 1.9.2
+  - 1.9.3
+  - 2.0.0
+  - 2.1
+
+gemfile:
+  - Gemfile
+
+before_script:
+  - mysql -e 'create database sorcery_test;'
+
+matrix:
+  allow_failures:
+    - rvm: :jruby
+
+  include:
+    - rvm: 1.9.3
+      gemfile: gemfiles/active_record-rails41.gemfile
+
+    - rvm: 2.0.0
+      gemfile: gemfiles/active_record-rails41.gemfile
+
+    - rvm: 2.1
+      gemfile: gemfiles/active_record-rails41.gemfile
+
+    - rvm: jruby
+      gemfile: gemfiles/active_record-rails41.gemfile
+
+    - rvm: 1.9.3
+      gemfile: gemfiles/active_record-rails40.gemfile
+
+    - rvm: 2.0.0
+      gemfile: gemfiles/active_record-rails40.gemfile
+
+    - rvm: 2.1
+      gemfile: gemfiles/active_record-rails40.gemfile
+
+    - rvm: jruby
+      gemfile: gemfiles/active_record-rails40.gemfile

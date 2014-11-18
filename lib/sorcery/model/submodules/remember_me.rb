@@ -22,11 +22,7 @@ module Sorcery
           end
           
           base.send(:include, InstanceMethods)
-
-          base.sorcery_config.after_config << :define_remember_me_mongoid_fields if defined?(Mongoid) and base.ancestors.include?(Mongoid::Document)
-          if defined?(MongoMapper) and base.ancestors.include?(MongoMapper::Document)
-            base.sorcery_config.after_config << :define_remember_me_mongo_mapper_fields
-          end
+          base.sorcery_config.after_config << :define_remember_me_fields
           
           base.extend(ClassMethods)
         end
@@ -34,15 +30,11 @@ module Sorcery
         module ClassMethods
           protected
 
-          def define_remember_me_mongoid_fields
-            field sorcery_config.remember_me_token_attribute_name,            :type => String
-            field sorcery_config.remember_me_token_expires_at_attribute_name, :type => Time
+          def define_remember_me_fields
+            sorcery_adapter.define_field sorcery_config.remember_me_token_attribute_name, String
+            sorcery_adapter.define_field sorcery_config.remember_me_token_expires_at_attribute_name, Time
           end
 
-          def define_remember_me_mongo_mapper_fields
-            key sorcery_config.remember_me_token_attribute_name, String
-            key sorcery_config.remember_me_token_expires_at_attribute_name, Time
-          end
         end
 
         module InstanceMethods
@@ -56,15 +48,19 @@ module Sorcery
             expires = self.send(config.remember_me_token_expires_at_attribute_name)
 
             if token.blank? or expires.blank? or expires < Time.now.in_time_zone
-              self.update_many_attributes(config.remember_me_token_attribute_name => TemporaryToken.generate_random_token,
+            self.sorcery_adapter.update_attributes(config.remember_me_token_attribute_name => TemporaryToken.generate_random_token,
                                           config.remember_me_token_expires_at_attribute_name => Time.now.in_time_zone + config.remember_me_for)
             end
+          end
+
+          def has_remember_me_token?
+            self.send(sorcery_config.remember_me_token_attribute_name).present?
           end
           
           # You shouldn't really use this one yourself - it's called by the controller's 'forget_me!' method.
           def forget_me!
             config = sorcery_config
-            self.update_many_attributes(config.remember_me_token_attribute_name => nil,
+            self.sorcery_adapter.update_attributes(config.remember_me_token_attribute_name => nil,
                                         config.remember_me_token_expires_at_attribute_name => nil)
           end
         end
