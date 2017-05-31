@@ -185,7 +185,7 @@ module Sorcery
         config = sorcery_config
         mail = config.send(mailer).send(config.send(method),self)
         if defined?(ActionMailer) and config.send(mailer).kind_of?(Class) and config.send(mailer) < ActionMailer::Base
-          mail.deliver
+          mail.deliver_later
         end
       end
     end
